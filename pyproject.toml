@@ -1,0 +1,49 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "option6"
+author = "Edward Knight"
+author-email = "edw@rdknig.ht"
+home-page = "https://github.com/Edward-Knight/option6"
+description-file = "README.md"
+requires-python = "~= 3.6"
+requires = [
+    "discord.py"
+]
+classifiers = ["License :: OSI Approved :: MIT License"]
+
+[tool.flit.scripts]
+option6 = "option6:main"
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
+dev = [
+    "pre-commit",
+    "wheel",
+]
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326, C0116"
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --cov option6 --cov-branch"
+log_file_level = "DEBUG"
+junit_family = "xunit2"
+required_plugins = "pytest-cov"
+xfail_strict = true
