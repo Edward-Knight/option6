@@ -2,6 +2,7 @@
 """The sixth option."""
 import argparse
 import logging
+import sys
 from typing import Optional, Sequence
 
 from discord.ext import commands
@@ -32,6 +33,11 @@ def main(argv: Optional[Sequence[str]] = None):
     @bot.command()
     async def ping(ctx):
         await ctx.send("pong")
+
+    @bot.command()
+    async def bye(ctx):
+        await ctx.send("I'll be back...")
+        sys.exit()
 
     bot.run(token)
 
