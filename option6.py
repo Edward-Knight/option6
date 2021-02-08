@@ -31,6 +31,10 @@ def main(argv: Optional[Sequence[str]] = None):
         await channel.send("I'm back")
 
     @bot.command()
+    async def version(ctx):
+        await ctx.send(f"I am version {__version__}")
+
+    @bot.command()
     async def ping(ctx):
         await ctx.send("pong")
 
