@@ -25,6 +25,7 @@ test = [
 
 dev = [
     "pre-commit",
+    "pylint",
     "wheel",
 ]
 
@@ -36,7 +37,7 @@ profile = "black"
 line_length = 100
 
 [tool.pylint.messages_control]
-disable = "C0330, C0326, C0116"
+disable = "C0330, C0326, C0116, W0612"
 
 [tool.pylint.format]
 max-line-length = 120
