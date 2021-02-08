@@ -8,7 +8,7 @@ from typing import Optional, Sequence
 from discord.ext import commands
 
 __version__ = "0.1"
-NOT_HANGOUTS_GENERAL_CHANNEL_ID = 739551135173705743
+NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID = 739761480471150613
 
 
 def main(argv: Optional[Sequence[str]] = None):
@@ -27,7 +27,7 @@ def main(argv: Optional[Sequence[str]] = None):
     @bot.event
     async def on_ready():
         print("Logged in as", bot.user.name, bot.user.id)
-        channel = bot.get_channel(NOT_HANGOUTS_GENERAL_CHANNEL_ID)
+        channel = bot.get_channel(NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID)
         await channel.send("I'm back")
 
     @bot.command()
