@@ -27,10 +27,9 @@ repos:
     rev: 5.7.0
     hooks:
       - id: isort
-  - repo: local
+  - repo: https://github.com/pycqa/pylint
+    rev: pylint-2.6.0
     hooks:
       - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [ python ]
+        additional_dependencies:
+          - discord.py
