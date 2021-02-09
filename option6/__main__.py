@@ -17,17 +17,7 @@ from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import make_turtle, save_turtle
 
 
-def main(argv: Optional[Sequence[str]] = None):
-    logging.basicConfig(level=logging.INFO)
-
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
-    parser.add_argument("token_file", type=argparse.FileType())
-    args = parser.parse_args(argv)
-
-    token = args.token_file.read().strip()
-    args.token_file.close()
-
+def make_bot() -> commands.Bot:
     bot = commands.Bot(command_prefix="/")
 
     start_time = datetime.now()
@@ -107,6 +97,21 @@ def main(argv: Optional[Sequence[str]] = None):
         """Make some spirograph art."""
         await ctx.send(file=File(save_turtle(make_turtle()), "spiro.png"))
 
+    return bot
+
+
+def main(argv: Optional[Sequence[str]] = None):
+    logging.basicConfig(level=logging.INFO)
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument("token_file", type=argparse.FileType())
+    args = parser.parse_args(argv)
+
+    token = args.token_file.read().strip()
+    args.token_file.close()
+
+    bot = make_bot()
     bot.run(token)
 
 
