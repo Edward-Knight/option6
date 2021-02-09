@@ -21,6 +21,7 @@ option6 = "option6.__main__:main"
 
 [tool.flit.metadata.requires-extra]
 test = [
+    "dpytest",
     "pytest",
     "pytest-cov",
 ]
