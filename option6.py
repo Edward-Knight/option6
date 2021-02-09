@@ -7,7 +7,7 @@ from typing import Optional, Sequence
 
 from discord.ext import commands
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID = 739761480471150613
 
 
@@ -42,6 +42,18 @@ def main(argv: Optional[Sequence[str]] = None):
     async def bye(ctx):
         await ctx.send("I'll be back...")
         sys.exit()
+
+    @bot.command()
+    async def roll(ctx, dice: str):
+        """Rolls a dice in NdN format."""
+        try:
+            rolls, limit = map(int, dice.split('d'))
+        except Exception:
+            await ctx.send('Format has to be in NdN!')
+            return
+
+        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+        await ctx.send(result)
 
     @bot.event
     async def on_message(message):
