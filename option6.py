@@ -2,8 +2,8 @@
 """The sixth option."""
 import argparse
 import logging
-import sys
 import random
+import sys
 from typing import Optional, Sequence
 
 from discord.ext import commands
@@ -48,17 +48,17 @@ def main(argv: Optional[Sequence[str]] = None):
     async def roll(ctx, dice: str):
         """Rolls a dice in NdN format."""
         try:
-            rolls, limit = map(int, dice.split('d'))
+            rolls, limit = map(int, dice.split("d"))
 
             if rolls < 0 or limit < 0:
-                await ctx.send('No negative rolls or dice!')
+                await ctx.send("No negative rolls or dice!")
                 return
 
-        except Exception:
-            await ctx.send('Format has to be in NdN!')
+        except ValueError:
+            await ctx.send("Format has to be in NdN!")
             return
 
-        result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+        result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
 
     @bot.event
