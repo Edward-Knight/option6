@@ -49,6 +49,11 @@ def main(argv: Optional[Sequence[str]] = None):
         """Rolls a dice in NdN format."""
         try:
             rolls, limit = map(int, dice.split('d'))
+
+            if rolls < 0 or limit < 0:
+                await ctx.send('No negative rolls or dice!')
+                return
+
         except Exception:
             await ctx.send('Format has to be in NdN!')
             return
