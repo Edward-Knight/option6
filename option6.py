@@ -7,7 +7,7 @@ from typing import Optional, Sequence
 
 from discord.ext import commands
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID = 739761480471150613
 
 
@@ -42,6 +42,16 @@ def main(argv: Optional[Sequence[str]] = None):
     async def bye(ctx):
         await ctx.send("I'll be back...")
         sys.exit()
+
+    @bot.event
+    async def on_message(message):
+        if message.author == bot.user:
+            return
+
+        # are you talking behind my back?
+        mentions = ["option 6", "option six"]
+        if any(mention in message.content.lower() for mention in mentions):
+            await message.channel.send(f"Are you talking behind my back, {message.author.name}?")
 
     bot.run(token)
 
