@@ -64,16 +64,32 @@ def main(argv: Optional[Sequence[str]] = None):
     async def on_message(message):
         if message.author == bot.user:
             return
+        
+        #Todo: would be good to import from config file
 
         # are you talking behind my back?
-        mentions = ["option 6", "option six"]
-        if any(mention in message.content.lower() for mention in mentions):
-            await message.channel.send(f"Are you talking behind my back, {message.author.name}?")
+        respondToKeywords(
+            message,
+            ["option 6", "option six"],
+            f"Are you talking behind my back, {message.author.name}?"
+        )
+
+        # dog
+        respondToKeywords(
+            message,
+            ["hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat","Betty"],
+            "Woof! Woof! Wag! Wag!"
+        )
 
         await bot.process_commands(message)
 
     bot.run(token)
 
+
+async def respondToKeywords(message, keywords, response):
+    """responds to keywords with the provided response"""
+    if any(keyword in message.content.lower() for keyword in keywords):
+            await message.channel.send(response)
 
 if __name__ == "__main__":
     main()
