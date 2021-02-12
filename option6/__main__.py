@@ -9,8 +9,8 @@ from typing import Optional, Sequence
 from discord.ext import commands
 
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
-from option6.helpers.messagePublisher import messagePublisher
-from option6.helpers.messageHandler import dogMessageHandler, option6MessageHandler
+from option6.helpers.message_handler import DogMessageHandler, Option6MessageHandler
+from option6.helpers.message_publisher import MessagePublisher
 
 
 def main(argv: Optional[Sequence[str]] = None):
@@ -26,9 +26,9 @@ def main(argv: Optional[Sequence[str]] = None):
 
     bot = commands.Bot(command_prefix="/")
 
-    publisher = messagePublisher()
-    publisher.subscribe(option6MessageHandler())
-    publisher.subscribe(dogMessageHandler())
+    publisher = MessagePublisher()
+    publisher.subscribe(Option6MessageHandler())
+    publisher.subscribe(DogMessageHandler())
 
     @bot.event
     async def on_ready():
@@ -76,6 +76,7 @@ def main(argv: Optional[Sequence[str]] = None):
         await ctx.send(result)
 
     bot.run(token)
+
 
 if __name__ == "__main__":
     main()
