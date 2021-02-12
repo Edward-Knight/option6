@@ -1,4 +1,4 @@
 """The sixth option."""
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID = 739761480471150613
