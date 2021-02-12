@@ -1,5 +1,5 @@
 """Handlers for responding to keywords in messages."""
-from random import choice
+import random
 from typing import Optional, Sequence, Set
 
 
@@ -8,15 +8,21 @@ class MessageHandler:
 
     keywords: Set[str] = set()
     responses: Optional[Sequence[str]] = None
+    chance: float = 1.0
 
     def should_respond(self, message) -> bool:
-        """Check if {self.keywords} are in {message}."""
-        return any(keyword in message.content.casefold() for keyword in self.keywords)
+        """Will return {True} if {self.keywords} are in {message},
+        and if we hit the specified random chance.
+        """
+        return (
+            any(keyword in message.content.casefold() for keyword in self.keywords)
+            and self.chance > random.random()
+        )
 
     async def respond(self, message) -> None:
         """Optionally respond to an incoming message."""
         if self.should_respond(message):
-            await message.reply(choice(self.responses))
+            await message.reply(random.choice(self.responses))
 
 
 class Option6MessageHandler(MessageHandler):
