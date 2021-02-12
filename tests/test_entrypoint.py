@@ -8,3 +8,7 @@ def test_help():
 
 def test_version():
     subprocess.check_call(["option6", "--version"])
+
+
+def test_module_interface():
+    subprocess.check_call(["python", "-m", "option6", "--version"])
