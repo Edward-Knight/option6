@@ -1,35 +1,37 @@
 """Handlers for responding to keywords in messages."""
-from abc import ABC, abstractmethod
+from typing import Optional, Set
 
 
-class MessageHandler(ABC):
+class MessageHandler:
     """Base class for responding to keywords in messages."""
 
-    _keywords = []
+    keywords: Set[str] = set()
+    response: Optional[str] = None
 
-    def should_respond(self, message):
-        return any(keyword in message.content.lower() for keyword in self._keywords)
+    def should_respond(self, message) -> bool:
+        """Check if {self.keywords} are in {message}."""
+        return any(keyword in message.content.casefold() for keyword in self.keywords)
 
-    @abstractmethod
-    async def respond(self, message):
-        """Check keywords and optionally respond to an incoming message."""
+    async def respond(self, message) -> None:
+        """Optionally respond to an incoming message."""
+        if self.should_respond(message):
+            await message.reply(self.response)
 
 
 class Option6MessageHandler(MessageHandler):
     """Responds to mentions of Option 6."""
 
-    _keywords = ["option 6", "option six"]
+    keywords = ["option 6", "option six"]
 
     async def respond(self, message):
         if self.should_respond(message):
-            await message.channel.send(f"Are you talking behind my back, {message.author.name}?")
+            await message.channel.send(
+                f"Are you talking behind my back, {message.author.display_name}?"
+            )
 
 
 class DogMessageHandler(MessageHandler):
     """Responds like a dog."""
 
-    _keywords = ["hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat", "betty"]
-
-    async def respond(self, message):
-        if self.should_respond(message):
-            await message.channel.send("Woof! Woof! Wag! Wag!")
+    keywords = ["hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat", "betty"]
+    response = "Woof! Woof! Wag! Wag!"
