@@ -9,7 +9,7 @@ from typing import Optional, Sequence
 from discord.ext import commands
 
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
-from option6.helpers.message_handler import DogMessageHandler, Option6MessageHandler
+from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
 
 
@@ -27,8 +27,8 @@ def main(argv: Optional[Sequence[str]] = None):
     bot = commands.Bot(command_prefix="/")
 
     publisher = MessagePublisher()
-    publisher.subscribe(Option6MessageHandler())
-    publisher.subscribe(DogMessageHandler())
+    for handler in HANDLERS:
+        publisher.subscribe(handler())
 
     @bot.event
     async def on_ready():
