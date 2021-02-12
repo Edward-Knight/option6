@@ -33,7 +33,6 @@ def main(argv: Optional[Sequence[str]] = None):
     @bot.event
     async def on_ready():
         print("Logged in as", bot.user.name, bot.user.id)
-        print (bot.guilds)
         channel = bot.get_channel(NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID)
         await channel.send("I'm back")
 
