@@ -9,6 +9,8 @@ from typing import Optional, Sequence
 from discord.ext import commands
 
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
+from option6.helpers.messagePublisher import messagePublisher
+from option6.helpers.messageHandler import dogMessageHandler, option6MessageHandler
 
 
 def main(argv: Optional[Sequence[str]] = None):
@@ -24,11 +26,25 @@ def main(argv: Optional[Sequence[str]] = None):
 
     bot = commands.Bot(command_prefix="/")
 
+    publisher = messagePublisher()
+    publisher.subscribe(option6MessageHandler())
+    publisher.subscribe(dogMessageHandler())
+
     @bot.event
     async def on_ready():
         print("Logged in as", bot.user.name, bot.user.id)
+        print (bot.guilds)
         channel = bot.get_channel(NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID)
         await channel.send("I'm back")
+
+    @bot.event
+    async def on_message(message):
+        if message.author == bot.user:
+            return
+
+        # publish the message
+        await publisher.publish(message)
+        await bot.process_commands(message)
 
     @bot.command()
     async def version(ctx):
@@ -60,36 +76,7 @@ def main(argv: Optional[Sequence[str]] = None):
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
 
-    @bot.event
-    async def on_message(message):
-        if message.author == bot.user:
-            return
-        
-        #Todo: would be good to import from config file
-
-        # are you talking behind my back?
-        respondToKeywords(
-            message,
-            ["option 6", "option six"],
-            f"Are you talking behind my back, {message.author.name}?"
-        )
-
-        # dog
-        respondToKeywords(
-            message,
-            ["hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat","Betty"],
-            "Woof! Woof! Wag! Wag!"
-        )
-
-        await bot.process_commands(message)
-
     bot.run(token)
-
-
-async def respondToKeywords(message, keywords, response):
-    """responds to keywords with the provided response"""
-    if any(keyword in message.content.lower() for keyword in keywords):
-            await message.channel.send(response)
 
 if __name__ == "__main__":
     main()
