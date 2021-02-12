@@ -8,8 +8,7 @@ from typing import Optional, Sequence
 
 from discord.ext import commands
 
-__version__ = "1.1.3"
-NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID = 739761480471150613
+from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
 
 
 def main(argv: Optional[Sequence[str]] = None):
