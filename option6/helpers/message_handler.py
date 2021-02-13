@@ -3,13 +3,13 @@ import random
 import re
 import string
 from abc import ABC, abstractmethod
-from typing import Sequence, Set, Type
+from typing import Iterable, Sequence, Set, Type
 
 
 class MessageHandler(ABC):
     """Base class for detecting keywords in messages."""
 
-    keywords: Set
+    keywords: Iterable[str]
     """Keywords to look for in a message.
 
     Must be lower case.
