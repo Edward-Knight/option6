@@ -7,10 +7,12 @@ import sys
 from typing import Optional, Sequence
 
 from discord.ext import commands
+from discord.file import File
 
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
+from option6.turtle import make_turtle, save_turtle
 
 
 def main(argv: Optional[Sequence[str]] = None):
@@ -74,6 +76,11 @@ def main(argv: Optional[Sequence[str]] = None):
 
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
+
+    @bot.command()
+    async def spiro(ctx) -> None:
+        """Make some spirograph art."""
+        await ctx.send(file=File(save_turtle(make_turtle()), "spiro.png"))
 
     bot.run(token)
 

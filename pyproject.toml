@@ -10,7 +10,9 @@ home-page = "https://github.com/Edward-Knight/option6"
 description-file = "README.md"
 requires-python = "~= 3.6"
 requires = [
-    "discord.py"
+    "discord.py",
+    "pillow",
+    "xvfbwrapper; sys_platform == 'linux'",
 ]
 classifiers = ["License :: OSI Approved :: MIT License"]
 
