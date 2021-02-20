@@ -110,7 +110,7 @@ class ShittyReactor(MessageReactor, RandomMessageHandler):
     """Randomly awards people with poop."""
 
     keywords = string.ascii_lowercase
-    chance = 0.01
+    chance = 0.001
     emojis = ["💩"]
 
 
