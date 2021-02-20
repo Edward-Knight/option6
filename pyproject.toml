@@ -8,7 +8,7 @@ author = "Edward Knight"
 author-email = "edw@rdknig.ht"
 home-page = "https://github.com/Edward-Knight/option6"
 description-file = "README.md"
-requires-python = "~= 3.6"
+requires-python = "~= 3.7"
 requires = [
     "discord.py",
     "pillow",
