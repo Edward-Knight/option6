@@ -1,5 +1,6 @@
 """Handlers for responding to keywords in messages."""
 import random
+import re
 import string
 from abc import ABC, abstractmethod
 from typing import Sequence, Set, Type
@@ -18,7 +19,8 @@ class MessageHandler(ABC):
         """Will return {True} if {self.keywords} are in {message},
         and if we hit the specified random chance.
         """
-        return any(keyword in message.content.casefold() for keyword in self.keywords)
+        words = re.findall(r"\w+", message.content.casefold())
+        return any(keyword in words for keyword in self.keywords)
 
     @abstractmethod
     async def handle(self, message) -> None:
