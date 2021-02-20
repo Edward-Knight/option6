@@ -45,15 +45,16 @@ def make_turtle() -> Canvas:
     # set up turtle
     screen.tracer(0)  # don't animate (run in a single frame)
     shelly.hideturtle()
+    shelly.pensize(2)
 
     # randomise variables for drawing
-    forward = random.randrange(100, 300)
-    left = random.randrange(100, 170)
+    forward = random.randrange(200, 400)
+    left = random.randrange(130, 230)
 
     # setup drawing
-    shelly.backward(forward / 2)
+    shelly.goto(-forward / 2, 0)
     x1, y1 = shelly.pos()
-    shelly.color("purple", "red")
+    shelly.color(tuple(random.random() for _ in range(3)), tuple(random.random() for _ in range(3)))
     shelly.pendown()
     shelly.begin_fill()
 
