@@ -2,8 +2,10 @@
 """The sixth option."""
 import argparse
 import logging
+import math
 import random
 import sys
+from datetime import datetime
 from typing import Optional, Sequence
 
 from discord.ext import commands
@@ -27,6 +29,8 @@ def main(argv: Optional[Sequence[str]] = None):
     args.token_file.close()
 
     bot = commands.Bot(command_prefix="/")
+
+    start_time = datetime.now()
 
     publisher = MessagePublisher()
     for handler in HANDLERS:
@@ -76,6 +80,23 @@ def main(argv: Optional[Sequence[str]] = None):
 
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
+    
+        @bot.command()
+        async def age(ctx):
+            time_since_start = datetime.now() - start_time
+            secs = time_since_start.seconds
+            minutes = math.floor(secs / 60)
+            hours = math.floor(minutes / 60)
+            days = time_since_start.days
+
+            if days >= 1:
+                await ctx.send(f"I have been alive for {days} day(s) and {hours} hour(s).")
+            elif hours >= 1:
+                await ctx.send(f"I have been alive for {hours} hour(s) and {minutes - (hours * 60)} minute(s).")
+            elif minutes >= 1:
+                await ctx.send(f"I have been alive for {minutes} day(s) and {secs} second(s).")
+            else:
+                await ctx.send(f"I have been alive for {secs} second(s).")
 
     @bot.command()
     async def spiro(ctx) -> None:
