@@ -80,7 +80,7 @@ def main(argv: Optional[Sequence[str]] = None):
 
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
-    
+
     @bot.command()
     async def age(ctx):
         time_since_start = datetime.now() - start_time
@@ -92,9 +92,13 @@ def main(argv: Optional[Sequence[str]] = None):
         if days >= 1:
             await ctx.send(f"I have been alive for {days} day(s) and {hours} hour(s).")
         elif hours >= 1:
-            await ctx.send(f"I have been alive for {hours} hour(s) and {minutes - (hours * 60)} minute(s).")
+            await ctx.send(
+                f"I have been alive for {hours} hour(s) and {minutes - (hours * 60)} minute(s)."
+            )
         elif minutes >= 1:
-            await ctx.send(f"I have been alive for {minutes} minute(s) and {secs - (minutes * 60)} second(s).")
+            await ctx.send(
+                f"I have been alive for {minutes} minute(s) and {secs - (minutes * 60)} second(s)."
+            )
         else:
             await ctx.send(f"I have been alive for {secs} second(s).")
 
