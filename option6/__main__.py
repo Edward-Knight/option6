@@ -14,7 +14,7 @@ from discord.file import File
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
-from option6.turtle import make_turtle, save_turtle  # type: ignore
+from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
 
 
 def make_bot() -> commands.Bot:
@@ -95,7 +95,10 @@ def make_bot() -> commands.Bot:
     @bot.command()
     async def spiro(ctx) -> None:
         """Make some spirograph art."""
-        await ctx.send(file=File(save_turtle(make_turtle()), "spiro.png"))
+        with make_screen() as screen:
+            canvas = draw_spirograph(screen)
+            fp = save_canvas(canvas)
+        await ctx.send(file=File(fp, "spiro.png"))
 
     return bot
 

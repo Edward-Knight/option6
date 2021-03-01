@@ -3,11 +3,12 @@ import atexit
 import math
 import platform
 import random
+from contextlib import contextmanager
 from functools import lru_cache
 from io import BytesIO
 from tkinter import Canvas
-from turtle import _CFG, RawTurtle, _Screen
-from typing import List, Tuple
+from turtle import _CFG, RawTurtle, Screen, TurtleScreen
+from typing import ContextManager, List, Tuple
 
 from PIL import Image
 from PIL.Image import Image as ImageClass
@@ -26,26 +27,28 @@ def setup_xvfb() -> None:
     xvfb.start()
 
 
-def make_turtle() -> Canvas:
+@contextmanager
+def make_screen() -> ContextManager[TurtleScreen]:
+    """Create a screen to draw on. Will clear the screen after use."""
     setup_xvfb()
+    screen = Screen()
+    try:
+        yield screen
+    finally:
+        screen.clear()
 
-    # todo: try and create more isolated? root/canvas/screen/turtle
-    # root = Tk()
-    # canvas = Canvas(root, height=1500, width=1500)
-    # screen = TurtleScreen(canvas)
-    # shelly = RawTurtle(screen)
 
-    # create canvas and turtle
-    screen = _Screen()
+def draw_spirograph(screen: TurtleScreen) -> Canvas:
+    canvas = screen.getcanvas()
     shelly = RawTurtle(
-        screen,
+        canvas,
         shape=_CFG["shape"],
         undobuffersize=_CFG["undobuffersize"],
         visible=_CFG["visible"],
     )
-    canvas = screen._canvas
 
     # set up turtle
+    shelly.speed(0)
     screen.tracer(0)  # don't animate (run in a single frame)
     shelly.hideturtle()
     shelly.pensize(2)
@@ -76,8 +79,8 @@ def make_turtle() -> Canvas:
     return canvas
 
 
-def save_turtle(screen: Canvas) -> BytesIO:
-    ps = screen.postscript()
+def save_canvas(canvas: Canvas) -> BytesIO:
+    ps = canvas.postscript()
     ps_f = BytesIO(ps.encode())
     img = Image.open(ps_f)
     img = trim_image(img)
