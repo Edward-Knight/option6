@@ -94,7 +94,7 @@ def main(argv: Optional[Sequence[str]] = None):
         elif hours >= 1:
             await ctx.send(f"I have been alive for {hours} hour(s) and {minutes - (hours * 60)} minute(s).")
         elif minutes >= 1:
-            await ctx.send(f"I have been alive for {minutes} minutes(s) and {secs - (minutes * 60)} second(s).")
+            await ctx.send(f"I have been alive for {minutes} minute(s) and {secs - (minutes * 60)} second(s).")
         else:
             await ctx.send(f"I have been alive for {secs} second(s).")
 
