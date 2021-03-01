@@ -14,7 +14,7 @@ from discord.file import File
 from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
-from option6.turtle import make_turtle, save_turtle
+from option6.turtle import make_turtle, save_turtle  # type: ignore
 
 
 def main(argv: Optional[Sequence[str]] = None):

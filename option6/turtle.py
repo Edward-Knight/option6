@@ -1,3 +1,4 @@
+# type: ignore
 import atexit
 import math
 import platform

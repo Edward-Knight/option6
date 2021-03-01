@@ -4,7 +4,7 @@ from pathlib import Path
 
 import py.path
 
-from option6.turtle import make_turtle, save_turtle
+from option6.turtle import make_turtle, save_turtle  # type: ignore
 
 
 def check_file_mime(file_path: Path, mime_type: str):
