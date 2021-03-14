@@ -16,15 +16,21 @@ class MessageHandler(ABC):
     """
 
     def should_respond(self, message) -> bool:
-        """Will return {True} if {self.keywords} are in {message},
-        and if we hit the specified random chance.
-        """
+        """Will return {True} if {self.keywords} are in {message}."""
         words = re.findall(r"\w+", message.content.casefold())
         return any(keyword in words for keyword in self.keywords)
 
     @abstractmethod
     async def handle(self, message) -> None:
         """Handle an incoming message."""
+
+
+class PhraseMessageHandler(MessageHandler, ABC):
+    """Looks for a phrase instead of a keyword."""
+
+    def should_respond(self, message) -> bool:
+        """Will return {True} if {self.keywords} are in {message}."""
+        return any(keyword in message.content.casefold() for keyword in self.keywords)
 
 
 class RandomMessageHandler(MessageHandler, ABC):
@@ -64,7 +70,7 @@ class MessageReactor(MessageHandler):
             await message.add_reaction(random.choice(self.emojis))
 
 
-class Option6MessageResponder(RandomMessageHandler, MessageResponder):
+class Option6MessageResponder(RandomMessageHandler, PhraseMessageHandler, MessageResponder):
     """Responds to mentions of Option 6."""
 
     keywords = {"option 6", "option six"}
@@ -82,7 +88,7 @@ class DogMessageResponder(MessageResponder):
     responses = ["Arf!", "Bark!", "Woof!", "_excitedly wags tail_"]
 
 
-class GoodBotReactor(MessageReactor):
+class GoodBotReactor(PhraseMessageHandler, MessageReactor):
     """Receives praise for being a good bot."""
 
     keywords = {"good bot", "who's a good boy"}
