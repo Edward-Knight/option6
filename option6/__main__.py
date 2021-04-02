@@ -5,6 +5,7 @@ import logging
 import math
 import random
 import sys
+import traceback
 from datetime import datetime
 from typing import Optional, Sequence
 
@@ -40,6 +41,19 @@ def make_bot(channel_id: int) -> commands.Bot:
         # publish the message
         await bot.process_commands(message)
         await publisher.publish(message)
+
+    @bot.event
+    async def on_error(ctx: commands.Context, _error: commands.CommandError) -> None:
+        await ctx.send(
+            "\n".join(
+                [
+                    "Mr. Stark... I don't feel so good...",
+                    "```",
+                    traceback.format_exc(),
+                    "```",
+                ]
+            )
+        )
 
     @bot.command()
     async def version(ctx):
