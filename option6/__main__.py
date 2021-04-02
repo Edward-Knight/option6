@@ -43,13 +43,13 @@ def make_bot(channel_id: int) -> commands.Bot:
         await publisher.publish(message)
 
     @bot.event
-    async def on_command_error(ctx: commands.Context, _error: commands.CommandError) -> None:
+    async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
         await ctx.send(
             "\n".join(
                 [
                     "Mr. Stark... I don't feel so good...",
                     "```",
-                    traceback.format_exc(),
+                    "".join(traceback.TracebackException.from_exception(error).format()),
                     "```",
                 ]
             )
