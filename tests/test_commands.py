@@ -7,7 +7,7 @@ from option6.__main__ import make_bot
 
 @pytest.mark.asyncio
 async def test_ping():
-    bot = make_bot()
+    bot = make_bot(0xED)
 
     dpytest.configure(bot)
 

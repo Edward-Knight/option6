@@ -11,13 +11,13 @@ from typing import Optional, Sequence
 from discord.ext import commands
 from discord.file import File
 
-from option6 import NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID, __version__
+from option6 import KEYS, __version__, update_keys
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
 
 
-def make_bot() -> commands.Bot:
+def make_bot(channel_id: int) -> commands.Bot:
     bot = commands.Bot(command_prefix="/")
 
     start_time = datetime.now()
@@ -29,7 +29,7 @@ def make_bot() -> commands.Bot:
     @bot.event
     async def on_ready():
         print("Logged in as", bot.user.name, bot.user.id)
-        channel = bot.get_channel(NOT_HANGOUTS_PROGRAMMING_CHANNEL_ID)
+        channel = bot.get_channel(channel_id)
         await channel.send("I'm back")
 
     @bot.event
@@ -108,14 +108,14 @@ def main(argv: Optional[Sequence[str]] = None):
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {__version__}")
-    parser.add_argument("token_file", type=argparse.FileType())
+    parser.add_argument("key_file", type=argparse.FileType())
     args = parser.parse_args(argv)
 
-    token = args.token_file.read().strip()
-    args.token_file.close()
+    update_keys(args.key_file)
+    args.key_file.close()
 
-    bot = make_bot()
-    bot.run(token)
+    bot = make_bot(KEYS["channel_id"])
+    bot.run(KEYS["discord"])
 
 
 if __name__ == "__main__":
