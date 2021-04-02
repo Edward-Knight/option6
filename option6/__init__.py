@@ -2,7 +2,7 @@
 import json
 from typing import IO, Any, MutableMapping
 
-__version__ = "1.5.3"
+__version__ = "1.5.4"
 
 KEYS: MutableMapping[str, Any] = {
     "channel_id": 739761480471150613,
