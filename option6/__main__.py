@@ -101,9 +101,9 @@ def make_bot(channel_id: int) -> commands.Bot:
         await ctx.send(file=File(fp, "spiro.png"))
 
     @bot.command()
-    async def ask(ctx, query: str) -> None:
+    async def ask(ctx, *query: str) -> None:
         """Ask Wolfram|Alpha something."""
-        await ctx.send(wolfram_alpha.query(query))
+        await ctx.send(wolfram_alpha.query(" ".join(query)))
 
     return bot
 

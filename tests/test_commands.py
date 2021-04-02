@@ -23,7 +23,7 @@ async def test_ask():
     bot = make_bot(0xED)
     dpytest.configure(bot)
 
-    with patch.object(wolfram_alpha, "query", return_value="test") as mock_query:
-        await dpytest.message("/ask hello")
-        dpytest.verify_message("test")
-        mock_query.assert_called_once_with("hello")
+    with patch.object(wolfram_alpha, "query", return_value="General Kenobi") as mock_query:
+        await dpytest.message("/ask Hello there")
+        dpytest.verify_message("General Kenobi")
+        mock_query.assert_called_once_with("Hello there")
