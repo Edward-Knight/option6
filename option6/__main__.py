@@ -11,7 +11,7 @@ from typing import Optional, Sequence
 from discord.ext import commands
 from discord.file import File
 
-from option6 import KEYS, __version__, update_keys
+from option6 import KEYS, __version__, update_keys, wolfram_alpha
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
@@ -38,8 +38,8 @@ def make_bot(channel_id: int) -> commands.Bot:
             return
 
         # publish the message
-        await publisher.publish(message)
         await bot.process_commands(message)
+        await publisher.publish(message)
 
     @bot.command()
     async def version(ctx):
@@ -99,6 +99,11 @@ def make_bot(channel_id: int) -> commands.Bot:
             canvas = draw_spirograph(screen)
             fp = save_canvas(canvas)
         await ctx.send(file=File(fp, "spiro.png"))
+
+    @bot.command()
+    async def ask(ctx, query: str) -> None:
+        """Ask Wolfram|Alpha something."""
+        await ctx.send(wolfram_alpha.query(query))
 
     return bot
 

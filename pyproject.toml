@@ -12,6 +12,7 @@ requires-python = "~= 3.7"
 requires = [
     "discord.py<1.5",  # not supported by dpytest: https://github.com/CraftSpider/dpytest/issues/39
     "pillow",
+    "wolframalpha",
     "xvfbwrapper; sys_platform == 'linux'",
 ]
 classifiers = ["License :: OSI Approved :: MIT License"]
