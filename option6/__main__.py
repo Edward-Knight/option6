@@ -44,6 +44,8 @@ def make_bot(channel_id: int) -> commands.Bot:
 
     @bot.event
     async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
+        if hasattr(error, "original"):
+            error = error.original
         await ctx.send(
             "\n".join(
                 [
