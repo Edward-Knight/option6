@@ -15,4 +15,7 @@ def get_client() -> Client:
 def query(q: str) -> str:
     """Query Wolfram|Alpha."""
     client = get_client()
-    return next(client.query(q).results).text
+    try:
+        return next(client.query(q).results).text
+    except StopIteration:
+        return "I dunno 🤷"
