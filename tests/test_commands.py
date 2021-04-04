@@ -29,3 +29,12 @@ async def test_ask():
         await dpytest.message("/ask Hello there")
         dpytest.verify_message("General Kenobi")
         mock_query.assert_called_once_with("Hello there")
+
+
+@pytest.mark.asyncio
+async def test_eval():
+    bot = make_bot(0xED)
+    dpytest.configure(bot)
+
+    await dpytest.message("/eval 1 + 2")
+    dpytest.verify_message("3")
