@@ -142,6 +142,13 @@ def make_bot(channel_id: int) -> commands.Bot:
         """Ask Wolfram|Alpha something."""
         await ctx.send(wolfram_alpha.query(" ".join(query)))
 
+    @bot.command(name="eval")
+    async def py(ctx: commands.Context, *code: str) -> None:
+        """Execute arbitrary Python code. Probably not a good idea."""
+        if not hasattr(py, "_globals"):
+            py._globals = {"bot": bot}
+        await ctx.send(str(eval(" ".join(code), py._globals)))
+
     return bot
 
 
