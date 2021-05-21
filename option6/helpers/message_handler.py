@@ -84,7 +84,7 @@ class Option6MessageResponder(RandomMessageHandler, PhraseMessageHandler, Messag
 class DogMessageResponder(MessageResponder):
     """Responds like a dog."""
 
-    keywords = {"hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat", "betty"}
+    keywords = {"hello", "tea", "breakfast", "chicken", "custards", "walkies", "treat"}
     responses = ["Arf!", "Bark!", "Woof!", "_excitedly wags tail_"]
 
 
