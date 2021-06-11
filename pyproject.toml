@@ -35,6 +35,10 @@ dev = [
 [tool.black]
 line-length = 100
 
+[tool.coverage.run]
+branch = true
+omit = ["/private/*", "/tmp/*"]
+
 [tool.isort]
 profile = "black"
 line_length = 100
@@ -46,7 +50,7 @@ disable = "C0330, C0326, C0116, W0612"
 max-line-length = 120
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --cov option6 --cov-branch"
+addopts = "--doctest-modules --cov option6 --cov-config pyproject.toml"
 log_file_level = "DEBUG"
 junit_family = "xunit2"
 required_plugins = "pytest-cov"
