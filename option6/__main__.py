@@ -85,7 +85,7 @@ def make_bot(channel_id: int) -> commands.Bot:
             f"I am currently running version {__version__} ({option6.GIT_HASH}).\n"
             f"The current version on disk is {version_on_disk()} ({git_hash()})."
         )
-        update_and_reinstall()
+        await update_and_reinstall()
         await ctx.send(
             f"Updated version on disk to {version_on_disk()} ({git_hash()}).\n"
             f"Load the new version with `/bye`."

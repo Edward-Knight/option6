@@ -1,9 +1,10 @@
 """The sixth option."""
+import asyncio
 import json
 import subprocess
 from typing import IO, Any, MutableMapping
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 GIT_HASH = "unknown"
 
 KEYS: MutableMapping[str, Any] = {
@@ -34,10 +35,18 @@ def version_on_disk() -> str:
     return version_string.split()[-1].strip('"')
 
 
-def update_and_reinstall() -> None:
-    """Pull changes from origin/trunk and reinstall."""
+async def update_and_reinstall() -> None:
+    """Pull changes from origin/trunk and reinstall.
+
+    Runs tasks in background threads.
+    """
+    kwargs = {"stdin": subprocess.DEVNULL, "stdout": None, "stderr": None}
     # update
-    subprocess.check_call(("git", "fetch", "origin"))
-    subprocess.check_call(("git", "reset", "--hard", "origin/trunk"))
+    await asyncio.create_subprocess_exec("git", "fetch", "origin", **kwargs)  # type: ignore
+    await asyncio.create_subprocess_exec(
+        "git", "reset", "--hard", "origin/trunk", **kwargs  # type: ignore
+    )
     # reinstall
-    subprocess.check_call((".venv/bin/python", "-m", "pip", "install", "."))
+    await asyncio.create_subprocess_exec(
+        ".venv/bin/python", "-m", "pip", "install", ".", **kwargs  # type: ignore
+    )
