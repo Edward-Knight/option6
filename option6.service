@@ -6,6 +6,7 @@ After=network-online.target
 User=option6
 WorkingDirectory=/opt/option6
 ExecStart=/opt/option6/.venv/bin/python -m option6 /opt/option6/keys.json
+Restart=on-success
 
 [Install]
 WantedBy=multi-user.target
