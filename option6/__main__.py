@@ -13,7 +13,15 @@ from discord.ext import commands
 from discord.file import File
 
 import option6
-from option6 import KEYS, __version__, git_hash, update_keys, wolfram_alpha
+from option6 import (
+    KEYS,
+    __version__,
+    git_hash,
+    update_and_reinstall,
+    update_keys,
+    version_on_disk,
+    wolfram_alpha,
+)
 from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
@@ -70,6 +78,18 @@ def make_bot(channel_id: int) -> commands.Bot:
     async def bye(ctx):
         await ctx.send("I'll be back...")
         sys.exit()
+
+    @bot.command()
+    async def update(ctx):
+        await ctx.send(
+            f"I am currently running version {__version__} ({option6.GIT_HASH}).\n"
+            f"The current version on disk is {version_on_disk()} ({git_hash()})."
+        )
+        update_and_reinstall()
+        await ctx.send(
+            f"Updated version on disk to {version_on_disk()} ({git_hash()}).\n"
+            f"Load the new version with `/bye`."
+        )
 
     @bot.command()
     async def roll(ctx, dice: str):
