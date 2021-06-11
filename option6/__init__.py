@@ -25,3 +25,19 @@ def git_hash() -> str:
     May raise a CalledProcessError.
     """
     return subprocess.check_output(("git", "rev-parse", "--short", "HEAD"), text=True).strip()
+
+
+def version_on_disk() -> str:
+    """Load the current version of Option 6 on disk."""
+    grep_command = ("grep", "-m", "1", "-o", '__version__ = ".*"', "option6/__init__.py")
+    version_string = subprocess.check_output(grep_command, text=True).strip()
+    return version_string.split()[-1].strip('"')
+
+
+def update_and_reinstall() -> None:
+    """Pull changes from origin/trunk and reinstall."""
+    # update
+    subprocess.check_call(("git", "fetch", "origin"))
+    subprocess.check_call(("git", "reset", "--hard", "origin/trunk"))
+    # reinstall
+    subprocess.check_call((".venv/bin/python", "-m", "pip", "install", "."))
