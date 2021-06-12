@@ -1,10 +1,11 @@
 import os
 import subprocess
 from pathlib import Path
-from typing import Generator
+from typing import AsyncGenerator, Generator
 
 import discord.ext.test as dpytest
 import pytest
+from discord.ext.commands import Bot
 
 from option6.__main__ import make_bot
 
@@ -31,7 +32,7 @@ def git_repo(tmp_path) -> Generator[Path, None, None]:
 
 
 @pytest.fixture
-async def bot(event_loop):
+async def bot(event_loop) -> AsyncGenerator[Bot, None]:
     bot = make_bot(0xED, event_loop)
     dpytest.configure(bot)
     yield bot

@@ -2,16 +2,13 @@
 """The sixth option."""
 import argparse
 import asyncio
-import atexit
 import logging
 import math
 import random
 import re
-import sys
 import traceback
 from datetime import datetime
 from typing import Optional, Sequence
-from unittest.mock import Mock
 
 from discord import Intents
 from discord.ext import commands
@@ -34,20 +31,34 @@ from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ig
 
 def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) -> commands.Bot:
     bot = commands.Bot("/", intents=Intents(members=True), loop=loop)
+
+    # set attributes
     bot._globals = {"bot": bot}
     """For executing arbitrary code."""
+    bot._start_time = datetime.now()
+    """Used by the /age command."""
 
-    start_time = datetime.now()
+    # override close
+    original_close = bot.close
 
-    publisher = MessagePublisher()
-    for handler in HANDLERS:
-        publisher.subscribe(handler())
+    async def say_goodbye_and_close() -> None:
+        """Send a goodbye message to the channel before closing."""
+        channel = bot.get_channel(channel_id)
+        await channel.send("I'll be back...")
+        await original_close()
+
+    bot.close = say_goodbye_and_close
 
     @bot.event
     async def on_ready():
         print("Logged in as", bot.user.name, bot.user.id)
         channel = bot.get_channel(channel_id)
         await channel.send("I'm back")
+
+    # set up custom on_message handlers
+    publisher = MessagePublisher()
+    for handler in HANDLERS:
+        publisher.subscribe(handler())
 
     @bot.event
     async def on_message(message):
@@ -84,7 +95,7 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
     @bot.command()
     async def bye(_ctx):
         """Restart Option 6."""
-        sys.exit()
+        await bot.close()
 
     @bot.command()
     async def update(ctx):
@@ -117,7 +128,7 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
 
     @bot.command()
     async def age(ctx):
-        time_since_start = datetime.now() - start_time
+        time_since_start = datetime.now() - bot._start_time
         secs = time_since_start.seconds
         minutes = math.floor(secs / 60)
         hours = math.floor(minutes / 60)
@@ -173,19 +184,6 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
     return bot
 
 
-def say_goodbye(bot: commands.Bot, channel_id: int) -> None:
-    """Send a goodbye message to the channel."""
-
-    async def _say_goodbye() -> None:
-        channel = bot.get_channel(channel_id)
-        # cannot "await" Mock objects (when testing)
-        if isinstance(channel, Mock):
-            return
-        await channel.send("I'll be back...")
-
-    asyncio.run(_say_goodbye())
-
-
 def main(argv: Optional[Sequence[str]] = None):
     logging.basicConfig(level=logging.INFO)
 
@@ -203,9 +201,6 @@ def main(argv: Optional[Sequence[str]] = None):
 
     # create bot
     bot = make_bot(KEYS["channel_id"])
-
-    # send a message on shutdown
-    atexit.register(say_goodbye, bot, KEYS["channel_id"])
 
     # run bot
     bot.run(KEYS["discord"])
