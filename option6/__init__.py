@@ -4,7 +4,7 @@ import json
 import subprocess
 from typing import IO, Any, MutableMapping
 
-__version__ = "1.6.1"
+__version__ = "1.7.0"
 GIT_HASH = "unknown"
 
 KEYS: MutableMapping[str, Any] = {
