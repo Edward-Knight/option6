@@ -158,7 +158,7 @@ def make_bot(channel_id: int) -> commands.Bot:
         # find code block
         match = re.search(r"```.*```", msg, re.DOTALL)
         if not match:
-            await ctx.message.reply("Cannot find code block to execute 🤷")
+            await ctx.reply("Cannot find code block to execute 🤷")
             return
         src = match.group()[3:-3]
 
