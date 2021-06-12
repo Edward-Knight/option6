@@ -4,6 +4,7 @@ import argparse
 import logging
 import math
 import random
+import re
 import sys
 import traceback
 from datetime import datetime
@@ -29,6 +30,8 @@ from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ig
 
 def make_bot(channel_id: int) -> commands.Bot:
     bot = commands.Bot(command_prefix="/")
+    bot._globals = {"bot": bot}
+    """For executing arbitrary code."""
 
     start_time = datetime.now()
 
@@ -143,11 +146,25 @@ def make_bot(channel_id: int) -> commands.Bot:
         await ctx.send(wolfram_alpha.query(" ".join(query)))
 
     @bot.command(name="eval")
-    async def py(ctx: commands.Context, *code: str) -> None:
-        """Execute arbitrary Python code. Probably not a good idea."""
-        if not hasattr(py, "_globals"):
-            py._globals = {"bot": bot}
-        await ctx.send(str(eval(" ".join(code), py._globals)))
+    async def py(ctx: commands.Context, *expr: str) -> None:
+        """Eval an arbitrary Python expression. Probably not a good idea."""
+        await ctx.send(str(eval(" ".join(expr), bot._globals)))
+
+    @bot.command()
+    async def code(ctx: commands.Context) -> None:
+        """Execute arbitrary Python statements. Probably not a good idea."""
+        msg: str = ctx.message.content
+
+        # find code block
+        match = re.search(r"```.*```", msg, re.DOTALL)
+        if not match:
+            await ctx.message.reply("Cannot find code block to execute 🤷")
+            return
+        src = match.group()[3:-3]
+
+        # exec code block
+        exec(src, bot._globals)
+        await ctx.message.add_reaction("✅")
 
     return bot
 

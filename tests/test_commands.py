@@ -38,3 +38,23 @@ async def test_eval():
 
     await dpytest.message("/eval 1 + 2")
     dpytest.verify_message("3")
+
+
+@pytest.mark.asyncio
+async def test_exec():
+    bot = make_bot(0xED)
+    dpytest.configure(bot)
+
+    code_block = """
+/exec
+Ignore this line
+```
+def add_one(x: int) -> int
+    return x + 1
+```
+"""
+
+    await dpytest.message(code_block)
+    # todo: verify message react
+    await dpytest.message("/code add_one(2)")
+    dpytest.verify_message("3")
