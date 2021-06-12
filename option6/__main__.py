@@ -30,7 +30,12 @@ from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ig
 
 
 def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) -> commands.Bot:
-    bot = commands.Bot("/", intents=Intents(members=True), loop=loop)
+    # set up intents
+    intents = Intents.default()
+    intents.members = True
+
+    # create bot instance
+    bot = commands.Bot("/", intents=intents, loop=loop)
 
     # set attributes
     bot._globals = {"bot": bot}
