@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Optional, Sequence
 from unittest.mock import Mock
 
+from discord import Intents
 from discord.ext import commands
 from discord.file import File
 
@@ -31,8 +32,8 @@ from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
 
 
-def make_bot(channel_id: int) -> commands.Bot:
-    bot = commands.Bot(command_prefix="/")
+def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) -> commands.Bot:
+    bot = commands.Bot("/", intents=Intents(members=True), loop=loop)
     bot._globals = {"bot": bot}
     """For executing arbitrary code."""
 

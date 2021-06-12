@@ -5,44 +5,30 @@ import discord.ext.test as dpytest
 import pytest
 
 from option6 import wolfram_alpha
-from option6.__main__ import make_bot
 
 
 @pytest.mark.asyncio
-async def test_ping():
-    bot = make_bot(0xED)
-
-    dpytest.configure(bot)
-
+async def test_ping(bot):
     await dpytest.message("/ping")
-    dpytest.verify_message("pong")
+    assert dpytest.verify().message().content("pong")
 
 
 @pytest.mark.asyncio
-async def test_ask():
-    bot = make_bot(0xED)
-    dpytest.configure(bot)
-
+async def test_ask(bot):
     with patch.object(wolfram_alpha, "query", return_value="General Kenobi") as mock_query:
         await dpytest.message("/ask Hello there")
-        dpytest.verify_message("General Kenobi")
+        assert dpytest.verify().message().content("General Kenobi")
         mock_query.assert_called_once_with("Hello there")
 
 
 @pytest.mark.asyncio
-async def test_eval():
-    bot = make_bot(0xED)
-    dpytest.configure(bot)
-
+async def test_eval(bot):
     await dpytest.message("/eval 1 + 2")
-    dpytest.verify_message("3")
+    assert dpytest.verify().message().content("3")
 
 
 @pytest.mark.asyncio
-async def test_exec():
-    bot = make_bot(0xED)
-    dpytest.configure(bot)
-
+async def test_exec(bot):
     code_block = """/code
 Ignore this line
 ```
@@ -56,4 +42,4 @@ Ignore this line too
     await dpytest.run_all_events()
     # todo: verify message react
     await dpytest.message("/eval add_one(2)")
-    dpytest.verify_message("3")
+    assert dpytest.verify().message().content("3")

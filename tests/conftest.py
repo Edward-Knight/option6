@@ -3,7 +3,10 @@ import subprocess
 from pathlib import Path
 from typing import Generator
 
+import discord.ext.test as dpytest
 import pytest
+
+from option6.__main__ import make_bot
 
 
 @pytest.fixture
@@ -25,3 +28,14 @@ def git_repo(tmp_path) -> Generator[Path, None, None]:
         yield current_dir
     finally:
         os.chdir(previous_dir)
+
+
+@pytest.fixture
+async def bot(event_loop):
+    bot = make_bot(0xED, event_loop)
+    dpytest.configure(bot)
+    yield bot
+    # Despite this test fixture being function scoped,
+    # the message queue persists between tests,
+    # so we need to clear it after each test.
+    await dpytest.empty_queue()
