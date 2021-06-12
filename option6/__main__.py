@@ -71,7 +71,7 @@ def make_bot(channel_id: int) -> commands.Bot:
 
     @bot.command()
     async def version(ctx):
-        await ctx.send(f"I am version {__version__} ({option6.GIT_HASH})")
+        await ctx.send(f"I am version {__version__} (`{option6.GIT_HASH}`)")
 
     @bot.command()
     async def ping(ctx):
@@ -85,12 +85,12 @@ def make_bot(channel_id: int) -> commands.Bot:
     @bot.command()
     async def update(ctx):
         await ctx.send(
-            f"I am currently running version {__version__} ({option6.GIT_HASH}).\n"
-            f"The current version on disk is {version_on_disk()} ({git_hash()})."
+            f"I am currently running version {__version__} (`{option6.GIT_HASH}`).\n"
+            f"The current version on disk is {version_on_disk()} (`{git_hash()}`)."
         )
         await update_and_reinstall()
         await ctx.send(
-            f"Updated version on disk to {version_on_disk()} ({git_hash()}).\n"
+            f"Updated version on disk to {version_on_disk()} (`{git_hash()}`).\n"
             f"Load the new version with `/bye`."
         )
 
