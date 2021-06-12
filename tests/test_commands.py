@@ -7,8 +7,6 @@ import pytest
 from option6 import wolfram_alpha
 from option6.__main__ import make_bot
 
-pytestmark = pytest.mark.xfail(reason="dpytest not working")
-
 
 @pytest.mark.asyncio
 async def test_ping():
@@ -45,16 +43,17 @@ async def test_exec():
     bot = make_bot(0xED)
     dpytest.configure(bot)
 
-    code_block = """
-/exec
+    code_block = """/code
 Ignore this line
 ```
-def add_one(x: int) -> int
+def add_one(x: int) -> int:
     return x + 1
 ```
+Ignore this line too
 """
 
     await dpytest.message(code_block)
+    await dpytest.run_all_events()
     # todo: verify message react
-    await dpytest.message("/code add_one(2)")
+    await dpytest.message("/eval add_one(2)")
     dpytest.verify_message("3")

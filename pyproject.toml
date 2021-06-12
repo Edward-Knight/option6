@@ -10,7 +10,7 @@ home-page = "https://github.com/Edward-Knight/option6"
 description-file = "README.md"
 requires-python = "~= 3.7"
 requires = [
-    "discord.py == 1.5.1",  # cannot get any later versions working with dpytest: https://github.com/CraftSpider/dpytest/issues/39
+    "discord.py == 1.4.2",  # required for dpytest 0.0.22
     "pillow",
     "wolframalpha",
     "xvfbwrapper; sys_platform == 'linux'",
@@ -22,7 +22,7 @@ option6 = "option6.__main__:main"
 
 [tool.flit.metadata.requires-extra]
 test = [
-    "dpytest == 0.0.23",  # cannot get version 0.1.0 working
+    "dpytest == 0.0.22",  # latest version I can get working, see: https://github.com/CraftSpider/dpytest/issues/52
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
