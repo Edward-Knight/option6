@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """The sixth option."""
 import argparse
+import asyncio
+import atexit
 import logging
 import math
 import random
@@ -9,6 +11,7 @@ import sys
 import traceback
 from datetime import datetime
 from typing import Optional, Sequence
+from unittest.mock import Mock
 
 from discord.ext import commands
 from discord.file import File
@@ -78,8 +81,8 @@ def make_bot(channel_id: int) -> commands.Bot:
         await ctx.send("pong")
 
     @bot.command()
-    async def bye(ctx):
-        await ctx.send("I'll be back...")
+    async def bye(_ctx):
+        """Restart Option 6."""
         sys.exit()
 
     @bot.command()
@@ -169,6 +172,19 @@ def make_bot(channel_id: int) -> commands.Bot:
     return bot
 
 
+def say_goodbye(bot: commands.Bot, channel_id: int) -> None:
+    """Send a goodbye message to the channel."""
+
+    async def _say_goodbye() -> None:
+        channel = bot.get_channel(channel_id)
+        # cannot "await" Mock objects (when testing)
+        if isinstance(channel, Mock):
+            return
+        await channel.send("I'll be back...")
+
+    asyncio.run(_say_goodbye())
+
+
 def main(argv: Optional[Sequence[str]] = None):
     logging.basicConfig(level=logging.INFO)
 
@@ -184,7 +200,13 @@ def main(argv: Optional[Sequence[str]] = None):
     # store the current commit hash
     option6.GIT_HASH = git_hash()
 
+    # create bot
     bot = make_bot(KEYS["channel_id"])
+
+    # send a message on shutdown
+    atexit.register(say_goodbye, bot, KEYS["channel_id"])
+
+    # run bot
     bot.run(KEYS["discord"])
 
 
