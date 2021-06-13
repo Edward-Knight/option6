@@ -72,9 +72,14 @@ def test_save_globals(tmp_path: Path, capsys):
 
         # test with directory
         var_dir.mkdir()
-        globals_ = {"test_key": "test_value"}
-        save_globals(globals_)
-        assert load_globals() == globals_
+        simple_globals = {"test_key": "test_value"}
+        save_globals(simple_globals)
+        assert load_globals() == simple_globals
+
+        # test saving complex objects
+        complex_globals = {"test_key": lambda x: x + 1}
+        save_globals(complex_globals)
+        assert load_globals() == complex_globals
 
         # test without permissions
         var_dir.chmod(444)
