@@ -4,7 +4,6 @@ import argparse
 import asyncio
 import logging
 import math
-import pickle
 import random
 import re
 import traceback
@@ -13,6 +12,7 @@ from pathlib import Path
 from types import MethodType
 from typing import Any, Dict, Optional, Sequence
 
+import dill as pickle
 from discord import Intents
 from discord.ext import commands
 from discord.file import File
@@ -94,6 +94,7 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
         channel = self.get_channel(channel_id)
         await channel.send("I'll be back...")
         await original_close()
+        del self._globals["bot"]
         save_globals(self._globals)
 
     bot.close = MethodType(close, bot)

@@ -1,8 +1,8 @@
 """Test bot functionality outside of commands."""
-import pickle
 from pathlib import Path
 from unittest.mock import Mock
 
+import dill as pickle
 import discord.ext.test as dpytest
 import pytest
 from discord.ext.commands import Bot
@@ -39,10 +39,16 @@ def test_load_globals(bot, tmp_path: Path, capsys):
         assert stdout == f"{globals_file} is not a file, not loading globals\n"
 
         # test with file
-        globals_ = {"test_key": "test_value"}
+        simple_globals_ = {"test_key": "test_value"}
         with open(globals_file, "wb") as f:
-            pickle.dump(globals_, f)
-        assert load_globals() == globals_
+            pickle.dump(simple_globals_, f)
+        assert load_globals() == simple_globals_
+
+        # test loading complex objects
+        complex_globals = {"test_key": lambda x: x + 1}
+        with open(globals_file, "wb") as f:
+            pickle.dump(complex_globals, f)
+        assert load_globals()["test_key"](2) == 3
 
         # test with corrupt file
         globals_file.write_text("test")
@@ -79,7 +85,7 @@ def test_save_globals(tmp_path: Path, capsys):
         # test saving complex objects
         complex_globals = {"test_key": lambda x: x + 1}
         save_globals(complex_globals)
-        assert load_globals() == complex_globals
+        assert load_globals()["test_key"](2) == 3
 
         # test without permissions
         var_dir.chmod(444)
