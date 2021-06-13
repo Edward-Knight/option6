@@ -4,7 +4,7 @@ import json
 import subprocess
 from typing import IO, Any, MutableMapping
 
-__version__ = "1.8.1"
+__version__ = "1.8.2"
 GIT_HASH = "unknown"
 
 KEYS: MutableMapping[str, Any] = {
@@ -40,13 +40,16 @@ async def update_and_reinstall() -> None:
 
     Runs tasks in background threads.
     """
-    kwargs = {"stdin": subprocess.DEVNULL, "stdout": None, "stderr": None}
+
+    async def run_in_background(*args: str):
+        kwargs = {"stdin": subprocess.DEVNULL, "stdout": subprocess.PIPE, "stderr": subprocess.PIPE}
+        p = await asyncio.create_subprocess_exec(*args, **kwargs)  # type: ignore
+        stdout, stderr = await p.communicate()
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(p.returncode or 0, args, stdout, stderr)
+
     # update
-    await asyncio.create_subprocess_exec("git", "fetch", "origin", **kwargs)  # type: ignore
-    await asyncio.create_subprocess_exec(
-        "git", "reset", "--hard", "origin/trunk", **kwargs  # type: ignore
-    )
+    await run_in_background("git", "fetch", "origin")
+    await run_in_background("git", "reset", "--hard", "origin/trunk")
     # reinstall
-    await asyncio.create_subprocess_exec(
-        ".venv/bin/python", "-m", "pip", "install", ".", **kwargs  # type: ignore
-    )
+    await run_in_background(".venv/bin/python", "-m", "pip", "install", ".")
