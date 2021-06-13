@@ -4,11 +4,14 @@ import argparse
 import asyncio
 import logging
 import math
+import pickle
 import random
 import re
 import traceback
 from datetime import datetime
-from typing import Optional, Sequence
+from pathlib import Path
+from types import MethodType
+from typing import Any, Dict, Optional, Sequence
 
 from discord import Intents
 from discord.ext import commands
@@ -28,6 +31,41 @@ from option6.helpers.message_handler import HANDLERS
 from option6.helpers.message_publisher import MessagePublisher
 from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ignore
 
+OPTION6_VAR_DIR = Path("/var/local/option6")
+"""Directory to store persistent data in."""
+OPTION6_GLOBALS_FILE = OPTION6_VAR_DIR / "globals.pickle"
+"""File to store persistent globals data in."""
+
+
+def load_globals() -> Dict[str, Any]:
+    """Attempt to load globals data from disk.
+
+    If it fails, returns an empty dict.
+    """
+    if not OPTION6_GLOBALS_FILE.is_file():
+        print(OPTION6_GLOBALS_FILE, "is not a file, not loading globals")
+        return {}
+
+    try:
+        with open(OPTION6_GLOBALS_FILE, "rb") as f:
+            return pickle.load(f)
+    except Exception as e:
+        print(f"Failed to load globals: {e.__class__.__name__}: {e}\n{traceback.format_exc()}")
+        return {}
+
+
+def save_globals(globals_: Dict[str, Any]) -> None:
+    """Attempt to save globals data to disk."""
+    if not OPTION6_GLOBALS_FILE.parent.is_dir():
+        print(OPTION6_GLOBALS_FILE.parent, "is not a directory, not saving globals")
+        return
+
+    try:
+        with open(OPTION6_GLOBALS_FILE, "wb") as f:
+            pickle.dump(globals_, f)
+    except Exception as e:
+        print(f"Failed to save globals: {e.__class__.__name__}: {e}\n{traceback.format_exc()}")
+
 
 def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) -> commands.Bot:
     # set up intents
@@ -38,21 +76,27 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
     bot = commands.Bot("/", intents=intents, loop=loop)
 
     # set attributes
-    bot._globals = {"bot": bot}
+    bot._globals = load_globals()
     """For executing arbitrary code."""
+    bot._globals["bot"] = bot
     bot._start_time = datetime.now()
     """Used by the /age command."""
 
     # override close
     original_close = bot.close
 
-    async def say_goodbye_and_close() -> None:
-        """Send a goodbye message to the channel before closing."""
-        channel = bot.get_channel(channel_id)
+    async def close(self) -> None:
+        """Overridden Client.close method.
+
+        Sends a goodbye message to the channel before closing.
+        Saves the bot._globals state to disk.
+        """
+        channel = self.get_channel(channel_id)
         await channel.send("I'll be back...")
         await original_close()
+        save_globals(self._globals)
 
-    bot.close = say_goodbye_and_close
+    bot.close = MethodType(close, bot)
 
     @bot.event
     async def on_ready():

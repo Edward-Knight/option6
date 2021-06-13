@@ -7,7 +7,16 @@ import discord.ext.test as dpytest
 import pytest
 from discord.ext.commands import Bot
 
+import option6
 from option6.__main__ import make_bot
+
+
+@pytest.fixture(scope="session", autouse=True)
+def patch_var_dir(tmp_path_factory) -> None:
+    var_dir = tmp_path_factory.mktemp("var") / "local" / "option6"
+    globals_file = var_dir / "globals.pickle"
+    option6.__main__.OPTION6_VAR_DIR = var_dir
+    option6.__main__.OPTION6_GLOBALS_FILE = globals_file
 
 
 @pytest.fixture
