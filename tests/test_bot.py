@@ -1,5 +1,7 @@
 """Test bot functionality outside of commands."""
+import asyncio
 from pathlib import Path
+from typing import Generator, Tuple
 from unittest.mock import Mock
 
 import dill as pickle
@@ -25,74 +27,118 @@ async def test_say_goodbye_and_close(bot: Bot):
     assert dpytest.verify().message().content("I'll be back...")
 
 
-def test_load_globals(bot, tmp_path: Path, capsys):
-    # override globals file
-    previous_globals_file = option6.__main__.OPTION6_GLOBALS_FILE
-    globals_file = tmp_path / "globals.pickle"
-    option6.__main__.OPTION6_GLOBALS_FILE = globals_file
-
-    try:
-        # test with no file
-        assert not globals_file.exists()
-        assert load_globals() == {}
-        stdout, _ = capsys.readouterr()
-        assert stdout == f"{globals_file} is not a file, not loading globals\n"
-
-        # test with file
-        simple_globals_ = {"test_key": "test_value"}
-        with open(globals_file, "wb") as f:
-            pickle.dump(simple_globals_, f)
-        assert load_globals() == simple_globals_
-
-        # test loading complex objects
-        complex_globals = {"test_key": lambda x: x + 1}
-        with open(globals_file, "wb") as f:
-            pickle.dump(complex_globals, f)
-        assert load_globals()["test_key"](2) == 3
-
-        # test with corrupt file
-        globals_file.write_text("test")
-        assert load_globals() == {}
-        stdout, _ = capsys.readouterr()
-        assert stdout.startswith("Failed to load globals: UnpicklingError:")
-    finally:
-        # restore globals file
-        option6.__main__.OPTION6_GLOBALS_FILE = previous_globals_file
-
-
-def test_save_globals(tmp_path: Path, capsys):
+@pytest.fixture
+def globals_fixture(tmp_path: Path) -> Generator[Tuple[Path, Path], None, None]:
     # override var dir and globals file
     previous_var_dir = option6.__main__.OPTION6_VAR_DIR
     previous_globals_file = option6.__main__.OPTION6_GLOBALS_FILE
     var_dir = tmp_path / "var" / "local" / "option6"
+    var_dir.mkdir(parents=True)
     globals_file = var_dir / "globals.pickle"
     option6.__main__.OPTION6_VAR_DIR = var_dir
     option6.__main__.OPTION6_GLOBALS_FILE = globals_file
 
     try:
-        # test with no directory
-        var_dir.parent.mkdir(parents=True)
-        save_globals({})
-        stdout, _ = capsys.readouterr()
-        assert stdout == f"{var_dir} is not a directory, not saving globals\n"
-
-        # test with directory
-        var_dir.mkdir()
-        simple_globals = {"test_key": "test_value"}
-        save_globals(simple_globals)
-        assert load_globals() == simple_globals
-
-        # test saving complex objects
-        complex_globals = {"test_key": lambda x: x + 1}
-        save_globals(complex_globals)
-        assert load_globals()["test_key"](2) == 3
-
-        # test without permissions
-        var_dir.chmod(444)
-        save_globals({})
-        stdout, _ = capsys.readouterr()
-        assert stdout.startswith("Failed to save globals: PermissionError:")
+        yield var_dir, globals_file
     finally:
         # restore var dir and globals file
         option6.__main__.OPTION6_VAR_DIR = previous_var_dir
         option6.__main__.OPTION6_GLOBALS_FILE = previous_globals_file
+
+
+def test_load_globals_no_file(globals_fixture: Tuple[Path, Path], capsys):
+    var_dir, globals_file = globals_fixture
+    assert not globals_file.exists()
+    assert load_globals() == {}
+    stdout, _ = capsys.readouterr()
+    assert stdout == f"{globals_file} is not a file, not loading globals\n"
+
+
+def test_load_globals_with_file(globals_fixture: Tuple[Path, Path]):
+    var_dir, globals_file = globals_fixture
+    globals_ = {"test_key": "test_value"}
+    with open(globals_file, "wb") as f:
+        pickle.dump(globals_, f)
+    assert load_globals() == globals_
+
+
+def test_load_globals_complex_object(globals_fixture: Tuple[Path, Path]):
+    """This fails for a pickle-backed store, but passes for a dill-backed store."""
+    var_dir, globals_file = globals_fixture
+    globals_ = {"test_key": lambda x: x + 1}
+    with open(globals_file, "wb") as f:
+        pickle.dump(globals_, f)
+    assert load_globals()["test_key"](2) == 3
+
+
+@pytest.mark.xfail(reason="current store does not support all objects")
+def test_load_globals_very_complex_object(globals_fixture: Tuple[Path, Path]):
+    """This fails for both a pickle-backed store, and a dill-backed store."""
+    var_dir, globals_file = globals_fixture
+
+    class ComplexClass:
+        @staticmethod
+        async def complex_function(cls):
+            await asyncio.sleep(0)
+            return 3
+
+    globals_ = {"test_key": ComplexClass}
+    with open(globals_file, "wb") as f:
+        pickle.dump(globals_, f)
+    assert load_globals()["test_key"].complex_function() == 3
+
+
+def test_load_globals_corrupt_file(globals_fixture: Tuple[Path, Path], capsys):
+    var_dir, globals_file = globals_fixture
+    globals_file.write_text("test")
+    assert load_globals() == {}
+    stdout, _ = capsys.readouterr()
+    assert stdout.startswith("Failed to load globals: UnpicklingError:")
+
+
+def test_save_globals_no_directory(globals_fixture: Tuple[Path, Path], capsys):
+    var_dir, globals_file = globals_fixture
+    var_dir.rmdir()
+    assert not var_dir.exists()
+    save_globals({})
+    stdout, _ = capsys.readouterr()
+    assert stdout == f"{var_dir} is not a directory, not saving globals\n"
+
+
+def test_save_globals_with_directory(globals_fixture: Tuple[Path, Path]):
+    var_dir, globals_file = globals_fixture
+    assert var_dir.exists()
+    simple_globals = {"test_key": "test_value"}
+    save_globals(simple_globals)
+    assert load_globals() == simple_globals
+
+
+def test_save_globals_complex_object(globals_fixture):
+    """This fails for a pickle-backed store, but passes for a dill-backed store."""
+    # test saving complex objects
+    complex_globals = {"test_key": lambda x: x + 1}
+    save_globals(complex_globals)
+    assert load_globals()["test_key"](2) == 3
+
+
+@pytest.mark.xfail(reason="current store does not support all objects")
+def test_save_globals_very_complex_object(globals_fixture):
+    """This fails for both a pickle-backed store, and a dill-backed store."""
+
+    class ComplexClass:
+        @staticmethod
+        async def complex_function(cls):
+            await asyncio.sleep(0)
+            return 3
+
+    complex_globals = {"test_key": ComplexClass}
+    save_globals(complex_globals)
+    assert load_globals()["test_key"].complex_function() == 3
+
+
+def test_save_globals_without_permission(globals_fixture: Tuple[Path, Path], capsys):
+    var_dir, globals_file = globals_fixture
+    var_dir.chmod(444)
+    save_globals({})
+    stdout, _ = capsys.readouterr()
+    assert stdout.startswith("Failed to save globals: PermissionError:")
