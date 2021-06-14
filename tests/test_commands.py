@@ -24,7 +24,9 @@ async def test_ask(bot):
 @pytest.mark.asyncio
 async def test_eval(bot):
     await dpytest.message("/eval 1 + 2")
-    assert dpytest.verify().message().content("3")
+    assert dpytest.verify().message().content("```3```")
+    await dpytest.message("/eval `1 + 2`")
+    assert dpytest.verify().message().content("```3```")
 
 
 @pytest.mark.asyncio
@@ -42,4 +44,4 @@ Ignore this line too
     await dpytest.run_all_events()
     # todo: verify message react
     await dpytest.message("/eval add_one(2)")
-    assert dpytest.verify().message().content("3")
+    assert dpytest.verify().message().content("```3```")
