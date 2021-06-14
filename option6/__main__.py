@@ -219,7 +219,8 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
     @bot.command(name="eval")
     async def py(ctx: commands.Context, *expr: str) -> None:
         """Eval an arbitrary Python expression. Probably not a good idea."""
-        await ctx.send(str(eval(" ".join(expr), bot._globals)))
+        result = eval(" ".join(expr).strip("`"), bot._globals)
+        await ctx.send(f"```{result}```")
 
     @bot.command()
     async def code(ctx: commands.Context) -> None:
