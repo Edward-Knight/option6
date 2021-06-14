@@ -1,16 +1,17 @@
 """Test bot functionality outside of commands."""
 import asyncio
+import inspect
+import textwrap
 from pathlib import Path
 from typing import Generator, Tuple
 from unittest.mock import Mock
 
-import dill as pickle
 import discord.ext.test as dpytest
 import pytest
 from discord.ext.commands import Bot
 
 import option6
-from option6.__main__ import load_globals, save_globals
+from option6.__main__ import load_globals, save_replay
 
 
 @pytest.mark.asyncio
@@ -34,7 +35,7 @@ def globals_fixture(tmp_path: Path) -> Generator[Tuple[Path, Path], None, None]:
     previous_globals_file = option6.__main__.OPTION6_GLOBALS_FILE
     var_dir = tmp_path / "var" / "local" / "option6"
     var_dir.mkdir(parents=True)
-    globals_file = var_dir / "globals.pickle"
+    globals_file = var_dir / "globals.py"
     option6.__main__.OPTION6_VAR_DIR = var_dir
     option6.__main__.OPTION6_GLOBALS_FILE = globals_file
 
@@ -56,23 +57,25 @@ def test_load_globals_no_file(globals_fixture: Tuple[Path, Path], capsys):
 
 def test_load_globals_with_file(globals_fixture: Tuple[Path, Path]):
     var_dir, globals_file = globals_fixture
-    globals_ = {"test_key": "test_value"}
-    with open(globals_file, "wb") as f:
-        pickle.dump(globals_, f)
-    assert load_globals() == globals_
+    replay = "test_key = 'test_value'"
+    globals_file.write_text(replay)
+    loaded_globals = load_globals()
+    assert "__builtins__" in loaded_globals
+    assert loaded_globals["test_key"] == "test_value"
+    assert len(loaded_globals) == 2
 
 
 def test_load_globals_complex_object(globals_fixture: Tuple[Path, Path]):
     """This fails for a pickle-backed store, but passes for a dill-backed store."""
     var_dir, globals_file = globals_fixture
-    globals_ = {"test_key": lambda x: x + 1}
-    with open(globals_file, "wb") as f:
-        pickle.dump(globals_, f)
-    assert load_globals()["test_key"](2) == 3
+    replay = "test_key = lambda x: x + 1"
+    globals_file.write_text(replay)
+    loaded_globals = load_globals()
+    assert loaded_globals["test_key"](2) == 3
 
 
-@pytest.mark.xfail(reason="current store does not support all objects")
-def test_load_globals_very_complex_object(globals_fixture: Tuple[Path, Path]):
+@pytest.mark.asyncio
+async def test_load_globals_very_complex_object(globals_fixture: Tuple[Path, Path]):
     """This fails for both a pickle-backed store, and a dill-backed store."""
     var_dir, globals_file = globals_fixture
 
@@ -82,48 +85,53 @@ def test_load_globals_very_complex_object(globals_fixture: Tuple[Path, Path]):
             await asyncio.sleep(0)
             return 3
 
-    globals_ = {"test_key": ComplexClass}
-    with open(globals_file, "wb") as f:
-        pickle.dump(globals_, f)
-    assert load_globals()["test_key"].complex_function() == 3
+    globals_file.write_text(textwrap.dedent(inspect.getsource(ComplexClass)))
+    loaded_globals = load_globals()
+    exec("import asyncio", loaded_globals)
+    assert (await eval("ComplexClass.complex_function(ComplexClass)", loaded_globals)) == 3
 
 
 def test_load_globals_corrupt_file(globals_fixture: Tuple[Path, Path], capsys):
     var_dir, globals_file = globals_fixture
-    globals_file.write_text("test")
-    assert load_globals() == {}
+    globals_file.write_text("x = 0\nx++")
+    assert list(load_globals().keys()) == ["__builtins__"]
     stdout, _ = capsys.readouterr()
-    assert stdout.startswith("Failed to load globals: UnpicklingError:")
+    assert "Failed to load globals: SyntaxError:" in stdout
 
 
-def test_save_globals_no_directory(globals_fixture: Tuple[Path, Path], capsys):
+def test_save_replay_no_directory(globals_fixture: Tuple[Path, Path], capsys):
     var_dir, globals_file = globals_fixture
     var_dir.rmdir()
     assert not var_dir.exists()
-    save_globals({})
+    save_replay("")
     stdout, _ = capsys.readouterr()
-    assert stdout == f"{var_dir} is not a directory, not saving globals\n"
+    assert stdout == f"{var_dir} is not a directory, not saving replay data\n"
 
 
-def test_save_globals_with_directory(globals_fixture: Tuple[Path, Path]):
+def test_save_replay_with_directory(globals_fixture: Tuple[Path, Path]):
     var_dir, globals_file = globals_fixture
     assert var_dir.exists()
-    simple_globals = {"test_key": "test_value"}
-    save_globals(simple_globals)
-    assert load_globals() == simple_globals
+    replay = "test_key = 'test_value'"
+    save_replay(replay)
+    assert globals_file.read_text() == replay
 
 
-def test_save_globals_complex_object(globals_fixture):
-    """This fails for a pickle-backed store, but passes for a dill-backed store."""
-    # test saving complex objects
-    complex_globals = {"test_key": lambda x: x + 1}
-    save_globals(complex_globals)
-    assert load_globals()["test_key"](2) == 3
+def test_save_replay_complex_object(globals_fixture):
+    """This fails for a pickle-backed store,
+    but passes for a dill-backed store,
+    and passes for a source-code-backed store.
+    """
+    var_dir, globals_file = globals_fixture
+    replay = "test_key = lambda x: x + 1"
+    save_replay(replay)
+    assert globals_file.read_text() == replay
 
 
-@pytest.mark.xfail(reason="current store does not support all objects")
-def test_save_globals_very_complex_object(globals_fixture):
-    """This fails for both a pickle-backed store, and a dill-backed store."""
+def test_save_replay_very_complex_object(globals_fixture):
+    """This fails for both a pickle-backed store, and a dill-backed store,
+    but passes for a source-code-backed store.
+    """
+    var_dir, globals_file = globals_fixture
 
     class ComplexClass:
         @staticmethod
@@ -131,14 +139,14 @@ def test_save_globals_very_complex_object(globals_fixture):
             await asyncio.sleep(0)
             return 3
 
-    complex_globals = {"test_key": ComplexClass}
-    save_globals(complex_globals)
-    assert load_globals()["test_key"].complex_function() == 3
+    replay = inspect.getsource(ComplexClass)
+    save_replay(replay)
+    assert globals_file.read_text() == replay
 
 
-def test_save_globals_without_permission(globals_fixture: Tuple[Path, Path], capsys):
+def test_save_replay_without_permission(globals_fixture: Tuple[Path, Path], capsys):
     var_dir, globals_file = globals_fixture
     var_dir.chmod(444)
-    save_globals({})
+    save_replay("")
     stdout, _ = capsys.readouterr()
-    assert stdout.startswith("Failed to save globals: PermissionError:")
+    assert stdout.startswith("Failed to save replay data: PermissionError:")

@@ -12,7 +12,6 @@ from pathlib import Path
 from types import MethodType
 from typing import Any, Dict, Optional, Sequence
 
-import dill as pickle
 from discord import Intents
 from discord.ext import commands
 from discord.file import File
@@ -33,38 +32,44 @@ from option6.turtle import draw_spirograph, make_screen, save_canvas  # type: ig
 
 OPTION6_VAR_DIR = Path("/var/local/option6")
 """Directory to store persistent data in."""
-OPTION6_GLOBALS_FILE = OPTION6_VAR_DIR / "globals.pickle"
+OPTION6_GLOBALS_FILE = OPTION6_VAR_DIR / "globals.py"
 """File to store persistent globals data in."""
 
 
 def load_globals() -> Dict[str, Any]:
-    """Attempt to load globals data from disk.
+    """Attempt to load and execute replay data from disk.
 
     If it fails, returns an empty dict.
     """
+    globals_: Dict[str, Any] = {}
+
     if not OPTION6_GLOBALS_FILE.is_file():
         print(OPTION6_GLOBALS_FILE, "is not a file, not loading globals")
-        return {}
+        return globals_
 
     try:
-        with open(OPTION6_GLOBALS_FILE, "rb") as f:
-            return pickle.load(f)
+        with open(OPTION6_GLOBALS_FILE) as f:
+            src = f.read()
+        number_of_lines = src.count("\n")
+        print(f"Replaying {number_of_lines} lines of code")
+        exec(src, globals_)
+        return globals_
     except Exception as e:
         print(f"Failed to load globals: {e.__class__.__name__}: {e}\n{traceback.format_exc()}")
-        return {}
+        return globals_
 
 
-def save_globals(globals_: Dict[str, Any]) -> None:
-    """Attempt to save globals data to disk."""
+def save_replay(replay: str) -> None:
+    """Attempt to save replay data to disk."""
     if not OPTION6_GLOBALS_FILE.parent.is_dir():
-        print(OPTION6_GLOBALS_FILE.parent, "is not a directory, not saving globals")
+        print(OPTION6_GLOBALS_FILE.parent, "is not a directory, not saving replay data")
         return
 
     try:
-        with open(OPTION6_GLOBALS_FILE, "wb") as f:
-            pickle.dump(globals_, f)
+        with open(OPTION6_GLOBALS_FILE, "a") as f:
+            f.write(replay)
     except Exception as e:
-        print(f"Failed to save globals: {e.__class__.__name__}: {e}\n{traceback.format_exc()}")
+        print(f"Failed to save replay data: {e.__class__.__name__}: {e}\n{traceback.format_exc()}")
 
 
 def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) -> commands.Bot:
@@ -77,8 +82,10 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
 
     # set attributes
     bot._globals = load_globals()
-    """For executing arbitrary code."""
+    """Environment for executing arbitrary code."""
     bot._globals["bot"] = bot
+    bot._replay = ""
+    """Source code to recreate changes to bot._globals."""
     bot._start_time = datetime.now()
     """Used by the /age command."""
 
@@ -89,13 +96,12 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
         """Overridden Client.close method.
 
         Sends a goodbye message to the channel before closing.
-        Saves the bot._globals state to disk.
+        Saves the bot._replay data to disk.
         """
         channel = self.get_channel(channel_id)
         await channel.send("I'll be back...")
         await original_close()
-        del self._globals["bot"]
-        save_globals(self._globals)
+        save_replay(self._replay)
 
     bot.close = MethodType(close, bot)
 
@@ -225,11 +231,16 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
         if not match:
             await ctx.send("Cannot find code block to execute 🤷")
             return
-        src = match.group()[3:-3]
+        src = match.group()[3:-3].strip()
 
         # exec code block
         exec(src, bot._globals)
+
+        # if the code ran successfully
+        # feedback to the user
         await ctx.message.add_reaction("✅")
+        # store the code for replay
+        bot._replay += f"# @{ctx.author.name} {ctx.message.created_at.isoformat()}\n{src}\n\n"
 
     return bot
 

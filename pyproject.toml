@@ -10,7 +10,6 @@ home-page = "https://github.com/Edward-Knight/option6"
 description-file = "README.md"
 requires-python = "~= 3.7"
 requires = [
-    "dill ~= 0.3.0",
     "discord.py ~= 1.7.0",
     "pillow ~= 8.0",
     "wolframalpha ~= 5.0",
