@@ -1,4 +1,5 @@
 """Test the bot commands."""
+import textwrap
 from unittest.mock import patch
 
 import discord.ext.test as dpytest
@@ -32,15 +33,15 @@ async def test_eval(bot):
 @pytest.mark.asyncio
 async def test_exec(bot):
     code_block = """/code
-Ignore this line
-```
-def add_one(x: int) -> int:
-    return x + 1
-```
-Ignore this line too
-"""
+    Ignore this line
+    ```
+    def add_one(x: int) -> int:
+        return x + 1
+    ```
+    Ignore this line too
+    """
 
-    await dpytest.message(code_block)
+    await dpytest.message(textwrap.dedent(code_block))
     await dpytest.run_all_events()
     # todo: verify message react
     await dpytest.message("/eval add_one(2)")

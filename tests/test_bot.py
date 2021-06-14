@@ -50,7 +50,7 @@ def globals_fixture(tmp_path: Path) -> Generator[Tuple[Path, Path], None, None]:
 def test_load_globals_no_file(globals_fixture: Tuple[Path, Path], capsys):
     var_dir, globals_file = globals_fixture
     assert not globals_file.exists()
-    assert load_globals() == {}
+    assert load_globals(None) == {"bot": None}
     stdout, _ = capsys.readouterr()
     assert stdout == f"{globals_file} is not a file, not loading globals\n"
 
@@ -59,10 +59,11 @@ def test_load_globals_with_file(globals_fixture: Tuple[Path, Path]):
     var_dir, globals_file = globals_fixture
     replay = "test_key = 'test_value'"
     globals_file.write_text(replay)
-    loaded_globals = load_globals()
+    loaded_globals = load_globals("test_bot")
     assert "__builtins__" in loaded_globals
+    assert loaded_globals["bot"] == "test_bot"
     assert loaded_globals["test_key"] == "test_value"
-    assert len(loaded_globals) == 2
+    assert len(loaded_globals) == 3
 
 
 def test_load_globals_complex_object(globals_fixture: Tuple[Path, Path]):
@@ -70,7 +71,7 @@ def test_load_globals_complex_object(globals_fixture: Tuple[Path, Path]):
     var_dir, globals_file = globals_fixture
     replay = "test_key = lambda x: x + 1"
     globals_file.write_text(replay)
-    loaded_globals = load_globals()
+    loaded_globals = load_globals(None)
     assert loaded_globals["test_key"](2) == 3
 
 
@@ -86,15 +87,31 @@ async def test_load_globals_very_complex_object(globals_fixture: Tuple[Path, Pat
             return 3
 
     globals_file.write_text(textwrap.dedent(inspect.getsource(ComplexClass)))
-    loaded_globals = load_globals()
+    loaded_globals = load_globals(None)
     exec("import asyncio", loaded_globals)
     assert (await eval("ComplexClass.complex_function(ComplexClass)", loaded_globals)) == 3
+
+
+@pytest.mark.asyncio
+async def test_load_globals_register_bot_command(globals_fixture: Tuple[Path, Path], bot: Bot):
+    var_dir, globals_file = globals_fixture
+
+    src = """
+    @bot.command()
+    async def test(ctx):
+        await ctx.send("test!")
+    """
+    globals_file.write_text(textwrap.dedent(src))
+    load_globals(bot)
+
+    await dpytest.message("/test")
+    assert dpytest.verify().message().content("test!")
 
 
 def test_load_globals_corrupt_file(globals_fixture: Tuple[Path, Path], capsys):
     var_dir, globals_file = globals_fixture
     globals_file.write_text("x = 0\nx++")
-    assert list(load_globals().keys()) == ["__builtins__"]
+    assert set(load_globals(None).keys()) == {"__builtins__", "bot"}
     stdout, _ = capsys.readouterr()
     assert "Failed to load globals: SyntaxError:" in stdout
 

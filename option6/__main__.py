@@ -36,12 +36,13 @@ OPTION6_GLOBALS_FILE = OPTION6_VAR_DIR / "globals.py"
 """File to store persistent globals data in."""
 
 
-def load_globals() -> Dict[str, Any]:
-    """Attempt to load and execute replay data from disk.
+def load_globals(bot: commands.Bot) -> Dict[str, Any]:
+    """Put the specified bot in the globals environment,
+    and attempt to load and execute replay data from disk.
 
-    If it fails, returns an empty dict.
+    If it fails, returns a dict with just the bot.
     """
-    globals_: Dict[str, Any] = {}
+    globals_: Dict[str, Any] = {"bot": bot}
 
     if not OPTION6_GLOBALS_FILE.is_file():
         print(OPTION6_GLOBALS_FILE, "is not a file, not loading globals")
@@ -81,9 +82,8 @@ def make_bot(channel_id: int, loop: Optional[asyncio.AbstractEventLoop] = None) 
     bot = commands.Bot("/", intents=intents, loop=loop)
 
     # set attributes
-    bot._globals = load_globals()
+    bot._globals = load_globals(bot)
     """Environment for executing arbitrary code."""
-    bot._globals["bot"] = bot
     bot._replay = ""
     """Source code to recreate changes to bot._globals."""
     bot._start_time = datetime.now()
