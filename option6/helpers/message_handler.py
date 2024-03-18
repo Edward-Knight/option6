@@ -1,4 +1,5 @@
 """Handlers for responding to keywords in messages."""
+
 import random
 import re
 import string
