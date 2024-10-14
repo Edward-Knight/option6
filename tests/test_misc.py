@@ -1,4 +1,5 @@
 """Test miscellaneous functions in option6/__init__.py."""
+
 import io
 import re
 import subprocess
