@@ -1,4 +1,5 @@
 """Publisher that brokers message handler subscriptions."""
+
 from typing import List
 
 from option6.helpers.message_handler import MessageHandler
