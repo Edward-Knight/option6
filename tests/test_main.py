@@ -1,4 +1,5 @@
 """Tests for option6.__main__."""
+
 from unittest.mock import Mock, patch
 
 import pytest
