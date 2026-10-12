@@ -1,4 +1,5 @@
 """Tests for option6.helpers.message_handler."""
+
 import pytest
 
 from option6.helpers.message_handler import MessageHandler, PhraseMessageHandler

@@ -1,4 +1,5 @@
 """Tests for option6.turtle."""
+
 import subprocess
 from pathlib import Path
 
