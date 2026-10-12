@@ -1,4 +1,5 @@
 """Test the entry point exposed by this module."""
+
 import subprocess
 
 
