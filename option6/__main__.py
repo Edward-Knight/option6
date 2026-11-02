@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """The sixth option."""
+
 import argparse
 import asyncio
 import logging

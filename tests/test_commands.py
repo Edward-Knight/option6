@@ -1,4 +1,5 @@
 """Test the bot commands."""
+
 import textwrap
 from unittest.mock import patch
 

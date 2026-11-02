@@ -1,4 +1,5 @@
 """Functions for interacting with Wolfram|Alpha."""
+
 import functools
 
 from wolframalpha import Client

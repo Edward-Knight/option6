@@ -1,4 +1,5 @@
 """Test bot functionality outside of commands."""
+
 import asyncio
 import inspect
 import textwrap
